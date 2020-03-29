@@ -104,6 +104,21 @@ class Manager:
             conn.rollback()
         conn.close()
 
+    def update_next_cursor(self, id, follower_next_cursor, friends_next_cursor):
+        conn = self.get_connection()
+        cur = conn.cursor()
+        try:
+            sql = 'update user set ' \
+                  'follower_next_cursor = %s, ' \
+                  'friends_next_cursor = %s ' \
+                  'where id = %s '
+            cur.execute(sql, (follower_next_cursor, friends_next_cursor, id))
+            conn.commit()
+        except Exception as e:
+            print(traceback.format_exc())
+            conn.rollback()
+        conn.close()
+
     def insert_id_only(self, user_ids):
         conn = self.get_connection()
         cur = conn.cursor()

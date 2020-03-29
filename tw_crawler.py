@@ -16,18 +16,33 @@ def get_follows():
     users = sql.get_random_user(count=1, lang=LanguageType.JA.value)
     for user in users:
         # 確認用
-        print(str(user["id"]))
-        print("randome user data -> user:" + user["name"] + ", screen_name:" + user["screen_name"] + ", lang:" + user["language_code"])
+        print("id" + str(user["id"]))
+        print("random user data -> user:" + user["name"] + ", screen_name:" + user["screen_name"] + ", lang:" + user["language_code"])
+        print("follower_next:" + str(user["follower_next_cursor"]) + " friends_next:" + str(user["friend_next_cursor"]))
         user_id = user["id"]
-        follower_ids = tw.get_follower_ids(user_id=user_id)
+
+        # フォロワーを取得してDBに登録
+        follower_data = tw.get_follower_ids(user_id=user_id, next_cursor=user["follower_next_cursor"])
+        print(follower_data)
+        follower_ids = follower_data["ids"]
+        follower_next_cursor = follower_data["next_cursor"]
         # print(follower_ids)
         sql.upsert_follows(user_id, follower_ids)
         sql.insert_id_only(follower_ids)
 
-        follow_ids = tw.get_friend_ids(user_id=user_id)
+        # フォローを取得してDBに登録
+        follow_data = tw.get_friend_ids(user_id=user_id, next_cursor=user["friends_next_cursor"])
+        friends_ids = follow_data["ids"]
+        friends_next_cursor = follow_data["next_cursor"]
         # print(follow_ids)
-        sql.upsert_followings(follow_ids, user_id)
-        sql.insert_id_only(follow_ids)
+        sql.upsert_followings(friends_ids, user_id)
+        sql.insert_id_only(friends_ids)
+
+        print("update cursor -> "
+              "id:" + str(user_id) +
+              "  follower_next:" + str(follower_next_cursor) +
+              " frineds_next:" + str(friends_next_cursor))
+        sql.update_next_cursor(user_id, follower_next_cursor, friends_next_cursor)
 
 
 def get_user_detail():
@@ -62,26 +77,42 @@ if __name__ == "__main__":
 
 def test():
     sql = sql_manager.Manager(os.path.abspath(os.path.dirname(__file__)) + "/setting/test_mysql.json")
-    users = tw.get_users(screen_names=["TamaZooPark" ,"InokashiraZoo"])
-    sql.upsert_user(users)
+
+    # users = tw.get_users(screen_names=["TamaZooPark" ,"InokashiraZoo"])
+    # sql.upsert_user(users)
     try:
-        users = sql.get_random_user(count=1, lang="ja")
+        users = sql.get_random_user(count=1, lang=LanguageType.JA.value)
         for user in users:
+            # 確認用
+            print("id:" + str(user["id"]))
+            print(
+                "random user data -> user:" + user["name"] + ", screen_name:" + user["screen_name"] + ", lang:"
+                + user["language_code"])
+            print("follower_next:" + str(user["follower_next_cursor"]) + " friends_next:" + str(
+                user["friends_next_cursor"]))
             user_id = user["id"]
-            follower_ids = tw.get_follower_ids(user_id=user_id)
+
+            # フォロワーを取得してDBに登録
+            follower_data = tw.get_follower_ids(user_id=user_id, next_cursor=user["follower_next_cursor"])
+            print(follower_data)
+            follower_ids = follower_data["ids"]
+            follower_next_cursor = follower_data["next_cursor"]
             # print(follower_ids)
             sql.upsert_follows(user_id, follower_ids)
             sql.insert_id_only(follower_ids)
 
-            follow_ids = tw.get_friend_ids(user_id=user_id)
+            # フォローを取得してDBに登録
+            follow_data = tw.get_friend_ids(user_id=user_id, next_cursor=user["friends_next_cursor"])
+            friends_ids = follow_data["ids"]
+            friends_next_cursor = follow_data["next_cursor"]
             # print(follow_ids)
-            sql.upsert_followings(follow_ids, user_id)
-            sql.insert_id_only(follow_ids)
+            sql.upsert_followings(friends_ids, user_id)
+            sql.insert_id_only(friends_ids)
 
-            # DB上でIDしか持たないユーザーの詳細を設定する
-            # IDしか持たないユーザーを取得
-            user_ids = sql.get_none_detail_user(count=100)
-            users = tw.get_users(user_ids=user_ids)
-            sql.upsert_user(users=users)
+            print("update cursor -> "
+                  "id:" + str(user_id) +
+                  "  follower_next:" + str(follower_next_cursor) +
+                  " frineds_next:" + str(friends_next_cursor))
+            sql.update_next_cursor(user_id, follower_next_cursor, friends_next_cursor)
     except Exception as e:
         print(traceback.format_exc(()))
