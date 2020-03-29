@@ -86,7 +86,7 @@ class Manager:
             users = []
             for r in j_users:
                 # print(r)
-                users.append(tw_object.User(r))
+                users.append(tw_object.User.create_user_from_tw(r))
             return users
         else:  # 正常通信出来なかった場合
             print("Failed: %d" % res.status_code)

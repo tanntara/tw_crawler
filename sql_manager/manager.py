@@ -6,6 +6,7 @@ import mysql.connector
 import json
 import random
 import traceback
+import tw_manager.tw_object as tw_object
 
 
 class Manager:
@@ -104,7 +105,7 @@ class Manager:
             conn.rollback()
         conn.close()
 
-    def update_next_cursor(self, id, follower_next_cursor, friends_next_cursor):
+    def update_next_cursor(self, user):
         conn = self.get_connection()
         cur = conn.cursor()
         try:
@@ -112,7 +113,7 @@ class Manager:
                   'follower_next_cursor = %s, ' \
                   'friends_next_cursor = %s ' \
                   'where id = %s '
-            cur.execute(sql, (follower_next_cursor, friends_next_cursor, id))
+            cur.execute(sql, (user.follower_next_cursor, user.friends_next_cursor, user.id))
             conn.commit()
         except Exception as e:
             print(traceback.format_exc())
@@ -165,7 +166,8 @@ class Manager:
                 # offset位置の指定
                 params.append(random.randint(0, max_num - 1))
                 cur.execute(random_sql, params)
-                user_list.append(cur.fetchone())
+                user_list.append(tw_object.User.create_user_from_sql(cur.fetchone()))
+
                 # 次のループのためにoffsetを削除して、全体のパラメータ数を戻しておく
                 params.pop()        # 末尾のoffset位置を削除
             conn.close()
