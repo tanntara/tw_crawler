@@ -98,33 +98,50 @@ class User:
     friends_next_cursor = 0
     language_code = LanguageType.NONE
 
-    def __init__(self, tw_params_dic=None, lang="en"):
-        self.id = tw_params_dic["id"]
-        self.name = tw_params_dic["name"]
-        self.screen_name = tw_params_dic["screen_name"]
-        self.location = tw_params_dic["location"]
-        # self.derived = tw_params_dic["derived"]
-        # self.url = tw_params_dic["url"]
-        # self.description = tw_params_dic["description"]
-        self.protected = tw_params_dic["protected"]
-        self.verified = tw_params_dic["verified"]
-        # self.follower_count = tw_params_dic["follower_count"]
-        # self.friends_count = tw_params_dic["friends_count"]
-        # self.listed_count = tw_params_dic["listed_count"]
-        # self.favourites_count = tw_params_dic["favourites_count"]
-        # self.statuses_count = tw_params_dic["statuses_count"]
-        # self.created_at = tw_params_dic["created_at"]
-        # self.profile_banner_url = tw_params_dic["profile_banner_url"]
-        # self.profile_image_url_https = tw_params_dic["profile_image_url_https"]
-        # self.default_profile = tw_params_dic["default_profile"]
-        # self.default_profile_image = tw_params_dic["default_profile_image"]
-        # self.withheld_in_countries = tw_params_dic["withheld_in_countries"]
-        # self.withheld_scope = tw_params_dic["withheld_scope"]
-        self.language_code = self.lang_detect(tw_params_dic["description"])
+    def __init__(self):
+        pass
 
-        print()
+    @classmethod
+    def create_user_from_tw(cls, tw_params_dic):
+        user = User()
+        user.id = tw_params_dic["id"]
+        user.name = tw_params_dic["name"]
+        user.screen_name = tw_params_dic["screen_name"]
+        user.location = tw_params_dic["location"]
+        # user.derived = tw_params_dic["derived"]
+        # user.url = tw_params_dic["url"]
+        # user.description = tw_params_dic["description"]
+        user.protected = tw_params_dic["protected"]
+        user.verified = tw_params_dic["verified"]
+        # user.follower_count = tw_params_dic["follower_count"]
+        # user.friends_count = tw_params_dic["friends_count"]
+        # user.listed_count = tw_params_dic["listed_count"]
+        # user.favourites_count = tw_params_dic["favourites_count"]
+        # user.statuses_count = tw_params_dic["statuses_count"]
+        # user.created_at = tw_params_dic["created_at"]
+        # user.profile_banner_url = tw_params_dic["profile_banner_url"]
+        # user.profile_image_url_https = tw_params_dic["profile_image_url_https"]
+        # user.default_profile = tw_params_dic["default_profile"]
+        # user.default_profile_image = tw_params_dic["default_profile_image"]
+        # user.withheld_in_countries = tw_params_dic["withheld_in_countries"]
+        # user.withheld_scope = tw_params_dic["withheld_scope"]
+        user.language_code = User.lang_detect(tw_params_dic["description"])
+        return user
 
-    def lang_detect(self, text):
+    @classmethod
+    def create_user_from_sql(cls, param):
+        user = User()
+        user.id = param["id"]
+        user.name = param["name"]
+        user.screen_name = param["screen_name"]
+        user.language_code = LanguageType.value_of(param["language_code"])
+        user.modified = param["modified"]
+        user.follower_next_cursor = param["follower_next_cursor"]
+        user.friends_next_cursor = param["friends_next_cursor"]
+        return user
+
+    @classmethod
+    def lang_detect(cls, text):
         # 変換できない文字列--空白や絵文字のみ--で構成される場合は例外が発生する模様
         try:
             code = detect(text)

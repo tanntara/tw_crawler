@@ -22,7 +22,7 @@ class Manager:
 
         self.tw = OAuth1Session(ck, cs, at, ats)
 
-    def get_follower_ids(self, user_id=None, screen_name=None, count=5000):
+    def get_follower_ids(self, user_id=None, screen_name=None, count=5000, next_cursor=0):
         # パラメータ生成
         params = {
             'count': count
@@ -31,11 +31,14 @@ class Manager:
             params.setdefault("user_id", user_id)
         elif screen_name is not None:
             params.setdefault("screen_name", screen_name)
+
+        if next_cursor and next_cursor != 0:
+            params.setdefault("cursor", next_cursor)
 
         url = "https://api.twitter.com/1.1/followers/ids.json"  # ユーザリスト取得エンドポイント
         return self.inner_get_ids(url, params)
 
-    def get_friend_ids(self, user_id=None, screen_name=None, count=5000):
+    def get_friend_ids(self, user_id=None, screen_name=None, count=5000, next_cursor=0):
         # パラメータ生成
         params = {
             'count': count
@@ -44,6 +47,10 @@ class Manager:
             params.setdefault("user_id", user_id)
         elif screen_name is not None:
             params.setdefault("screen_name", screen_name)
+
+        # 次のカーソルがある場合
+        if next_cursor and next_cursor != 0:
+            params.setdefault("cursor", next_cursor)
 
         url = "https://api.twitter.com/1.1/friends/ids.json"  # ユーザリスト取得エンドポイント
         return self.inner_get_ids(url, params)
@@ -59,7 +66,7 @@ class Manager:
             j_ids = json.loads(res.text)  # レスポンスからタイムラインリストを取得
             # print("Success get ids. from %s", url)
             # print(j_ids)
-            return j_ids["ids"]
+            return {"ids": j_ids["ids"], "next_cursor": j_ids["next_cursor"]}
         else:  # 正常通信出来なかった場合
             print("Failed: %d" % res.status_code)
             return None
@@ -79,7 +86,7 @@ class Manager:
             users = []
             for r in j_users:
                 # print(r)
-                users.append(tw_object.User(r))
+                users.append(tw_object.User.create_user_from_tw(r))
             return users
         else:  # 正常通信出来なかった場合
             print("Failed: %d" % res.status_code)
