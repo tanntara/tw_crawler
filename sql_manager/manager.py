@@ -150,7 +150,7 @@ class Manager:
 
             cur.execute(count_sql, params)
             max_num = cur.fetchone()["count"]
-            print(str(max_num))
+            # print(str(max_num))
 
             # ユーザーテーブルからランダムに取得
             user_list = []
@@ -175,7 +175,6 @@ class Manager:
             conn.rollback()
             conn.close()
             return None
-
 
     def get_none_detail_user(self, count=1):
         conn = self.get_connection()

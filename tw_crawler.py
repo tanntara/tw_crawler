@@ -18,7 +18,7 @@ def get_follows():
         # 確認用
         print("id" + str(user["id"]))
         print("random user data -> user:" + user["name"] + ", screen_name:" + user["screen_name"] + ", lang:" + user["language_code"])
-        print("follower_next:" + str(user["follower_next_cursor"]) + " friends_next:" + str(user["friend_next_cursor"]))
+        print("follower_next:" + str(user["follower_next_cursor"]) + " friends_next:" + str(user["friends_next_cursor"]))
         user_id = user["id"]
 
         # フォロワーを取得してDBに登録
